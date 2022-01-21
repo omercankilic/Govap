@@ -19,7 +19,7 @@ void MainWindow::initialize_parameters(){
     this->scne = new QGraphicsScene();
     this->ui->mainVideo->setScene(scne);
     videoCont = new VideoControl();
-    painterCont = new PainterController();
+    painterCont = new FrameProcessor();
 }
 
 void MainWindow::initialize_signal_connections(){  
@@ -34,7 +34,7 @@ void MainWindow::initialize_signal_connections(){
     connect(this->videoCont,&VideoControl::sig_slider_value_set,this,&MainWindow::set_slider_value);
     connect(this->videoCont,&VideoControl::sig_send_new_frame,this,&MainWindow::view_frame);
     connect(this->videoCont,&VideoControl::sig_pause_button_state,this,&MainWindow::set_pause_but_state);
-    connect(this,&MainWindow::on_createPainter,this->painterCont,&PainterController::create_new_painter);
+    connect(this,&MainWindow::on_createPainter,this->painterCont,&FrameProcessor::create_new_scribble);
 }
 
 void MainWindow::file_name_set(QString file_name){

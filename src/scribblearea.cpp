@@ -49,6 +49,7 @@
 ****************************************************************************/
 
 #include <QtWidgets>
+#include <QMainWindow>
 #if defined(QT_PRINTSUPPORT_LIB)
 #include <QtPrintSupport/qtprintsupportglobal.h>
 #if QT_CONFIG(printdialog)
@@ -56,33 +57,34 @@
 #include <QPrintDialog>
 #endif
 #endif
-
 #include "scribblearea.h"
+
+#include <deque>
 #include <iostream>
+
+
 using namespace std;
 //! [0]
-ScribbleArea::ScribbleArea(cv::Mat current_frame,QWidget *parent)
+ScribbleArea::ScribbleArea(QImage img,QWidget *parent)
     : QWidget(parent)
 {
-    cout<<"Scribble Created"<<endl;
+    image = img;
+    image_original = img;
     setAttribute(Qt::WA_StaticContents);
     modified = false;
     scribbling = false;
+    changed_pixelsQ_index = 0;
     myPenWidth = 1;
     myPenColor = Qt::blue;
-    parent->show();
+    this->openImage();
 }
 //! [0]
 
 //! [1]
-bool ScribbleArea::openImage(const QString &fileName){
-    QImage loadedImage;
-    if (!loadedImage.load(fileName))
-        return false;
+bool ScribbleArea::openImage(){
 
-    QSize newSize = loadedImage.size().expandedTo(size());
-    resizeImage(&loadedImage, newSize);
-    image = loadedImage;
+    QSize newSize = this->image.size().expandedTo(size());
+    resizeImage(&this->image, newSize);
     modified = false;
     update();
     return true;
@@ -111,19 +113,22 @@ void ScribbleArea::clearImage(){
 }
 void ScribbleArea::mousePressEvent(QMouseEvent *event){
     if (event->button() == Qt::LeftButton) {
+        cout<<"press event"<<endl;
         lastPoint = event->pos();
         scribbling = true;
     }
 }
 
 void ScribbleArea::mouseMoveEvent(QMouseEvent *event){
-    if ((event->buttons() & Qt::LeftButton) && scribbling)
+    if ((event->buttons() & Qt::LeftButton) && scribbling){
         drawLineTo(event->pos());
+       // cout<<"move event"<<endl;
+    }
 }
 
 void ScribbleArea::mouseReleaseEvent(QMouseEvent *event){
     if (event->button() == Qt::LeftButton && scribbling) {
-        drawLineTo(event->pos());
+        //cout<<"release event"<<endl;
         scribbling = false;
     }
 }
@@ -150,13 +155,28 @@ void ScribbleArea::drawLineTo(const QPoint &endPoint){
     modified = true;
 
     int rad = (myPenWidth / 2) + 2;
-    update(QRect(lastPoint, endPoint).normalized()
-                                     .adjusted(-rad, -rad, +rad, +rad));
+    update(QRect(lastPoint, endPoint).normalized().adjusted(-rad, -rad, +rad, +rad));
+  
+    //changed_pixels.push_back(lastPoint);
+    if(changed_pixelQ.size()>=MAX_BACK_MOVE_NB){    
+        changed_pixelQ.pop_front();
+    }
+    changed_pixel temp_px;
+    temp_px.pix_pos = endPoint;
+    temp_px.old_color = image.pixelColor(endPoint.x(),endPoint.y());
+    temp_px.new_color = this->penColor();
+    while(changed_pixelQ.size()-changed_pixelsQ_index>=2){
+        changed_pixelQ.pop_front();
+    }
+    cout<<"pos x : "<<endPoint.x()<<" pos y : "<<endPoint.y()<<endl;
+    changed_pixelQ.push_back(temp_px);
+    changed_pixelsQ_index = changed_pixelQ.size()-1;
     lastPoint = endPoint;
 }
 void ScribbleArea::resizeImage(QImage *image, const QSize &newSize){
-    if (image->size() == newSize)
+    if (image->size() == newSize){
         return;
+    }
 
     QImage newImage(newSize, QImage::Format_RGB32);
     newImage.fill(qRgb(255, 255, 255));
@@ -164,8 +184,8 @@ void ScribbleArea::resizeImage(QImage *image, const QSize &newSize){
     painter.drawImage(QPoint(0, 0), *image);
     *image = newImage;
 }
-void ScribbleArea::print()
-{
+
+void ScribbleArea::print(){
 //#if QT_CONFIG(printdialog)
 //    QPrinter printer(QPrinter::HighResolution);
 //
@@ -180,5 +200,28 @@ void ScribbleArea::print()
 //        painter.setWindow(image.rect());
 //        painter.drawImage(0, 0, image);
 //    }
-//#endif // QT_CONFIG(printdialog)
+    //#endif // QT_CONFIG(printdialog)
+}
+
+void ScribbleArea::go_back(){
+    changed_pixel temp_pix = changed_pixelQ.at(changed_pixelsQ_index);
+    image.setPixelColor(temp_pix.pix_pos,temp_pix.old_color);
+    changed_pixelsQ_index--;
+    
+    painter.drawLine(temp_pix.pix_pos, temp_pix.pix_pos);
+    //update(QRect(temp_pix.pix_pos, temp_pix.pix_pos).normalized().adjusted(-rad, -rad, +rad, +rad));
+    update();
+}
+
+void ScribbleArea::go_forward(){
+    if(changed_pixelsQ_index < changed_pixelQ.size()-1){
+        changed_pixel temp_pix = changed_pixelQ.at(changed_pixelsQ_index);
+        this->image.setPixelColor(temp_pix.pix_pos,temp_pix.new_color);
+        
+        painter.drawLine(temp_pix.pix_pos, temp_pix.pix_pos);
+        changed_pixelsQ_index++;
+       // update(QRect(temp_pix.pix_pos, temp_pix.pix_pos).normalized().adjusted(-rad, -rad, +rad, +rad));
+        
+    }
+    
 }

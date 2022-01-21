@@ -16,7 +16,7 @@ void VideoControl::initialize_parameters(){
     input_video_gop_size = -1;//decided in initialize_decoder_ctx func
     playing_speed_coeff  =  1;//will be connected to UI
     playing_delay        = -1;//decided in initialize_decoder_ctx func
-    video_stream_index   = -1;//decided in initialize_input_format_ctx func
+    video_stream_index   = -1;//decided  in initialize_input_format_ctx func
     audio_stream_index   = -1;//decided in initialize_input_format_ctx func
     current_frame_pts    = 0; // last played frame pts 
     video_duration       = 0; // video duration calculated by hand = 

@@ -51,6 +51,8 @@
 #ifndef SCRIBBLEAREA_H
 #define SCRIBBLEAREA_H
 
+#define MAX_BACK_MOVE_NB 300
+
 #include <QColor>
 #include <QImage>
 #include <QPoint>
@@ -61,15 +63,24 @@
 #include <opencv4/opencv2/highgui.hpp>
 #include <opencv4/opencv2/imgproc/imgproc.hpp>
 
+//c++ headers
+#include <deque>
+
+typedef struct {
+    QPoint pix_pos;
+    QColor old_color;
+    QColor new_color;
+}changed_pixel;
+using namespace std;
 //! [0]
 class ScribbleArea : public QWidget
 {
     Q_OBJECT
 
 public:
-    ScribbleArea(cv::Mat current_frame,QWidget *parent = 0);
+    ScribbleArea(QImage img,QWidget *parent = 0);
 
-    bool openImage(const QString &fileName);
+    bool openImage();
     bool saveImage(const QString &fileName, const char *fileFormat);
     void setPenColor(const QColor &newColor);
     void setPenWidth(int newWidth);
@@ -77,10 +88,13 @@ public:
     bool isModified() const { return modified; }
     QColor penColor() const { return myPenColor; }
     int penWidth() const { return myPenWidth; }
+    uint64 changed_pixelsQ_index;
 
 public slots:
     void clearImage();
     void print();
+    void go_back();
+    void go_forward();
 
 protected:
     void mousePressEvent(QMouseEvent *event) override;
@@ -92,13 +106,15 @@ protected:
 private:
     void drawLineTo(const QPoint &endPoint);
     void resizeImage(QImage *image, const QSize &newSize);
-
+    
     bool modified;
     bool scribbling;
     int myPenWidth;
     QColor myPenColor;
     QImage image;
+    QImage image_original;
     QPoint lastPoint;
+    std::deque<changed_pixel> changed_pixelQ;
 };
 //! [0]
 

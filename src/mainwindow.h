@@ -6,13 +6,12 @@
 #include <QGraphicsScene>
 #include <QMainWindow>
 #include <QFileDialog>
-#include "paintercontroller.h"
+#include "frameprocessor.h"
 //C++ libraries
 
 //developer created header files
 #include "graphicsdraw.h"
 #include "videocontrol.h"
-
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -37,7 +36,7 @@ class MainWindow : public QMainWindow
     public:
         MainWindow(QWidget *parent = nullptr);
         VideoControl *videoCont;
-        PainterController *painterCont;
+        FrameProcessor *painterCont;
         
         ~MainWindow();
         

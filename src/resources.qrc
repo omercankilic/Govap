@@ -9,5 +9,7 @@
         <file>icons/help.png</file>
         <file>icons/play.png</file>
         <file>icons/edit-image.png</file>
+        <file>icons/go_back.png</file>
+        <file>icons/go_forward.png</file>
     </qresource>
 </RCC>

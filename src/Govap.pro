@@ -16,25 +16,28 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    frameprocessor.cpp \
     graphicsdraw.cpp \
     helper_functions.cpp \
     main.cpp \
     mainwindow.cpp \
-    paintercontroller.cpp \
     scribblearea.cpp \
+    scribblewindow.cpp \
     videocontrol.cpp
 
 HEADERS += \
     ffmpeg_headers.h \
+    frameprocessor.h \
     graphicsdraw.h \
     helper_functions.h \
     mainwindow.h \
-    paintercontroller.h \
     scribblearea.h \
+    scribblewindow.h \
     videocontrol.h
 
 FORMS += \
-    mainwindow.ui
+    mainwindow.ui \
+    scribblewindow.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -46,6 +49,10 @@ DISTFILES += \
       IconsAndPhotos/fileIcon.png \
       IconsAndPhotos/helpIcon.png \
       fileIcon.png \
+      icons/Arrow-left.png \
+      icons/Arrow-right.png \
+      icons/go_back.png \
+      icons/go_forward.png \
       joker.jpg
 
 
