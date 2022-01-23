@@ -46,6 +46,9 @@ class VideoControl:public QObject
         atomic<bool> is_end_of_file;
         atomic<int>  playing_delay;
         atomic<int>  current_frame_index_inQ;
+        atomic<bool> seek_flag;
+        atomic<int> seek_time_from_slider;
+        
         //mutexes for state controls
         mutex mx_video_pause;
         mutex mx_video_stopped;
@@ -110,6 +113,7 @@ class VideoControl:public QObject
         void on_nextFrame();
         void on_previousFrame();
         void on_videoPaused();
+        void on_seek2_frame(int seek_slider_val);
         
     signals:
         void sig_send_new_frame(quint64 frame_index);

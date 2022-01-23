@@ -1,30 +1,51 @@
 #include "scribblewindow.h"
 #include "ui_scribblewindow.h"
 #include <QtWidgets>
-ScribbleWindow::ScribbleWindow(void* current_frame_ptr,QWidget *parent) :
+
+atomic<int> active_scribble_window_nb;
+
+ScribbleWindow::ScribbleWindow(int index,QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::ScribbleWindow){
     
     //here we clone the current frame in the main window class,
     //since it may change while we are processing the cv::Mat frame
+    
     ui->setupUi(this);
-    
-    this->current_frame = (*((cv::Mat*)(current_frame_ptr))).clone();
-    QImage qimg((uchar *)this->current_frame.data, this->current_frame.cols, this->current_frame.rows, this->current_frame.step, QImage::Format_RGB888);
-    
-    this->scribble_area = new ScribbleArea(qimg);
-    setCentralWidget(this->scribble_area);
-    this->connect_actions();
-    
-    this->show();
+    this->index = index;
+    is_active = false;
+    this->setWindowTitle("Scribble Window");
 }
 
 ScribbleWindow::~ScribbleWindow(){
+    delete this->scribble_area;
     delete ui;
-    cout<<"scriible close "<<endl;
+}
+
+void ScribbleWindow::closeEvent(QCloseEvent *event){
+    setCursor(Qt::ArrowCursor);
+    this->ui->actionEraser->setChecked(false);
+    this->scribble_area->is_eraser_active = false;
+    this->is_active = false;
+    delete this->scribble_area;
+    active_scribble_window_nb -=1;
+    this->scribble_area->eraser_size = INITIAL_ERASER_SIZE;
+}
+
+void ScribbleWindow::set_pars(void *current_frame_ptr){
+    this->is_active = true;     
+    this->current_frame = (*((cv::Mat*)(current_frame_ptr))).clone();
+    
+    this->scribble_area = new ScribbleArea();
+    setCentralWidget(this->scribble_area);
+    this->connect_actions();
+    
+    QImage qimg((uchar *)this->current_frame.data, this->current_frame.cols, this->current_frame.rows, this->current_frame.step, QImage::Format_RGB888);
+    this->scribble_area->activate(qimg);
 }
 
 void ScribbleWindow::on_actionClean_Screen_triggered(){
+    
     this->scribble_area->clearImage();
 }
 
@@ -77,12 +98,31 @@ bool ScribbleWindow::save_file(const QByteArray &fileFormat){
 }
 
 
-
-
 void ScribbleWindow::on_actionback_triggered(){
     this->scribble_area->go_back();
 }
 
 void ScribbleWindow::on_actionforward_triggered(){
     this->scribble_area->go_forward();
+}
+
+void ScribbleWindow::on_actionEraser_triggered(){
+    this->scribble_area->is_eraser_active = this->scribble_area->is_eraser_active ? false:true;
+    
+    if(this->scribble_area->is_eraser_active){    
+        setCursor(Qt::CrossCursor);
+    }else{
+        setCursor(Qt::ArrowCursor);
+    }
+}
+
+
+void ScribbleWindow::on_actionEraser_Size_triggered(){
+    
+    bool check;
+    int new_eraser_size = QInputDialog::getInt(this,tr("Scribble"),tr("Choose eraser size:"),this->scribble_area->eraserSize(),2,50,1,&check);
+    if(true == check){
+        this->scribble_area->eraser_size = new_eraser_size;
+    }
+    
 }

@@ -32,7 +32,7 @@ class MainWindow : public QMainWindow
         void on_videoPausedSig();
         void on_stopVideoSig();
         void on_createPainter(void* current_frame);
-        
+        void on_seek2_frame_sig(int seek_slider_val);
     public:
         MainWindow(QWidget *parent = nullptr);
         VideoControl *videoCont;
@@ -42,6 +42,8 @@ class MainWindow : public QMainWindow
         
         void initialize_parameters();        
         void initialize_signal_connections();
+        
+        void set_speed_checks(int index);
         
         //Video window scene parameters
         QGraphicsScene *scne;
@@ -67,11 +69,22 @@ class MainWindow : public QMainWindow
         
         void on_actionEdit_Frame_triggered();
         
+        void on_actionx1_triggered();
+        
+        void on_actionx2_triggered();
+        
+        void on_actionx3_triggered();
+        
+        void on_actionx4_triggered();
+        
+        void on_actionClose_triggered();
+        
     private:
         MyGraphicsDraw *mwGraphicsDraw;
         Ui::MainWindow *ui;
         
         
 };
+
 
 #endif // MAINWINDOW_H

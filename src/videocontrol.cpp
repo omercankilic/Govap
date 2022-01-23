@@ -23,6 +23,8 @@ void VideoControl::initialize_parameters(){
     last_frame_pts       = 0; // pts of the last frame in the queue
     input_video_framerate.den = 0;
     input_video_framerate.num = 0;
+    seek_time_from_slider = 0;
+    seek_flag = false;
 }
 
 int VideoControl::initialize_input_format_ctx()
@@ -145,11 +147,32 @@ int VideoControl::initialize_audio_decoder_ctx()
 void VideoControl::start_playing_video()
 {
     while(true == is_video_playing && false == is_video_stopped){
+        
+        if(seek_flag){
+            seek_flag =false;
+            
+            {
+                unique_lock<mutex> lk(this->mx_frames);
+                if(false == cv_mat_framesQ.empty()){
+                    cv_mat_framesQ.clear();
+                }
+            }
+            current_frame_number = seek_time_from_slider/1000;
+            current_frame_number = current_frame_number/this->video_decoder_ctx->framerate.den;
+            
+            avcodec_flush_buffers(this->video_decoder_ctx);
+            avcodec_send_packet(this->video_decoder_ctx,NULL);
+            //avcodec_send_packet(this->audio_decoder_ctx,NULL);
+            
+            int ret = av_seek_frame(inputFileFormatCtx,video_stream_index,seek_time_from_slider,AVSEEK_FLAG_BACKWARD);
+            cout<<"Seek is succesful : "<<ret<<endl;            
+            
+        }
         if(true == is_video_paused){
             cout<<"Video paused"<<endl;
             unique_lock<mutex> lk(mx_video_pause);
             cv_video_pause.wait(lk,[&]{
-                return false == is_video_paused || true == is_video_stopped;
+                return false == is_video_paused || true == is_video_stopped ||true == seek_flag;
             });
             
             if(true == is_video_stopped){
@@ -158,7 +181,8 @@ void VideoControl::start_playing_video()
                  * 1: video is really stopped
                  * 2: new video will be played while one video is still playing
                  */
-                return ;
+                clean_all();
+                break;
             }
         }
         
@@ -174,6 +198,10 @@ void VideoControl::start_playing_video()
         }
     }
     
+    if(is_video_stopped){
+        clean_all();
+        return;
+    }
     if(true == is_end_of_file){
         /**
           * @todo bring the application to initial state.
@@ -506,4 +534,10 @@ void VideoControl::on_videoPaused(){
             cv_video_pause.notify_all();
         }
     }
+}
+
+void VideoControl::on_seek2_frame(int seek_slider_val){
+    seek_flag = true;
+    seek_time_from_slider = seek_slider_val;
+    
 }

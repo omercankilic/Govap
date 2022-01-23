@@ -35,6 +35,7 @@ void MainWindow::initialize_signal_connections(){
     connect(this->videoCont,&VideoControl::sig_send_new_frame,this,&MainWindow::view_frame);
     connect(this->videoCont,&VideoControl::sig_pause_button_state,this,&MainWindow::set_pause_but_state);
     connect(this,&MainWindow::on_createPainter,this->painterCont,&FrameProcessor::create_new_scribble);
+    connect(this,&MainWindow::on_seek2_frame_sig,this->videoCont,&VideoControl::on_seek2_frame);
 }
 
 void MainWindow::file_name_set(QString file_name){
@@ -102,8 +103,9 @@ void MainWindow::on_actionOpen_triggered(){
     emit on_fileButtonSig(); 
 }
 
-void MainWindow::on_videoSeekSlider_sliderMoved(int position){
-    
+void MainWindow::on_videoSeekSlider_sliderMoved(int position){  
+    cout<<"main seek slider"<<endl;
+    emit on_seek2_frame_sig(position);
 }
 
 void MainWindow::on_previousFrame_clicked(){
@@ -115,6 +117,47 @@ void MainWindow::on_stopVideo_clicked(){
 }
 
 void MainWindow::on_actionEdit_Frame_triggered(){
-    cout<<"test"<<endl;
     emit on_createPainter((void*)(&current_image));
+}
+
+void MainWindow::on_actionx1_triggered()
+{
+    this->videoCont->playing_speed_coeff = 1;   
+    set_speed_checks(1);
+}
+
+void MainWindow::on_actionx2_triggered()
+{   
+    this->videoCont->playing_speed_coeff = 2;
+    set_speed_checks(2);
+}
+
+void MainWindow::on_actionx3_triggered()
+{   
+    this->videoCont->playing_speed_coeff = 3;
+    set_speed_checks(3);
+}
+
+void MainWindow::on_actionx4_triggered()
+{
+    this->videoCont->playing_speed_coeff = 4;
+    set_speed_checks(4);
+}
+
+
+void MainWindow::set_speed_checks(int index)
+{
+    for (int var = 1; var < 5; var++) {
+        if(index == var){
+            this->ui->menuSpeed->actions().at(var-1)->setChecked(true);
+        }else{
+            this->ui->menuSpeed->actions().at(var-1)->setChecked(false);
+        }
+    }
+    
+}
+
+void MainWindow::on_actionClose_triggered(){
+    this->videoCont->is_video_stopped = true;
+    this->close();
 }

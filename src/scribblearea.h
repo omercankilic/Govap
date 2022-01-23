@@ -52,6 +52,7 @@
 #define SCRIBBLEAREA_H
 
 #define MAX_BACK_MOVE_NB 300
+#define INITIAL_ERASER_SIZE 5
 
 #include <QColor>
 #include <QImage>
@@ -67,9 +68,11 @@
 #include <deque>
 
 typedef struct {
-    QPoint pix_pos;
+    QPoint pix_last_point;
+    QPoint pix_end_point;
     QColor old_color;
     QColor new_color;
+    int pen_width;
 }changed_pixel;
 using namespace std;
 //! [0]
@@ -78,7 +81,7 @@ class ScribbleArea : public QWidget
     Q_OBJECT
 
 public:
-    ScribbleArea(QImage img,QWidget *parent = 0);
+    ScribbleArea(QWidget *parent = 0);
 
     bool openImage();
     bool saveImage(const QString &fileName, const char *fileFormat);
@@ -88,14 +91,17 @@ public:
     bool isModified() const { return modified; }
     QColor penColor() const { return myPenColor; }
     int penWidth() const { return myPenWidth; }
+    int eraserSize() const {return eraser_size;}
     uint64 changed_pixelsQ_index;
-
+    
+    void activate(QImage img);
+    bool is_eraser_active;
+    int eraser_size;
 public slots:
     void clearImage();
     void print();
     void go_back();
     void go_forward();
-
 protected:
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;

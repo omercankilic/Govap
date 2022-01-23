@@ -65,22 +65,19 @@
 
 using namespace std;
 //! [0]
-ScribbleArea::ScribbleArea(QImage img,QWidget *parent)
+ScribbleArea::ScribbleArea(QWidget *parent)
     : QWidget(parent)
 {
-    image = img;
-    image_original = img;
+    
     setAttribute(Qt::WA_StaticContents);
     modified = false;
     scribbling = false;
     changed_pixelsQ_index = 0;
     myPenWidth = 1;
     myPenColor = Qt::blue;
-    this->openImage();
+    is_eraser_active = false;
+    eraser_size = INITIAL_ERASER_SIZE;
 }
-//! [0]
-
-//! [1]
 bool ScribbleArea::openImage(){
 
     QSize newSize = this->image.size().expandedTo(size());
@@ -106,14 +103,23 @@ void ScribbleArea::setPenColor(const QColor &newColor){
 void ScribbleArea::setPenWidth(int newWidth){
     myPenWidth = newWidth;
 }
+
+void ScribbleArea::activate(QImage img){
+    image = img;
+    image_original = img;
+    this->openImage();
+}
 void ScribbleArea::clearImage(){
+    /*
     image.fill(qRgb(255, 255, 255));
     modified = true;
+    */    
+    image = image_original;
+    openImage();
     update();
 }
 void ScribbleArea::mousePressEvent(QMouseEvent *event){
     if (event->button() == Qt::LeftButton) {
-        cout<<"press event"<<endl;
         lastPoint = event->pos();
         scribbling = true;
     }
@@ -121,14 +127,23 @@ void ScribbleArea::mousePressEvent(QMouseEvent *event){
 
 void ScribbleArea::mouseMoveEvent(QMouseEvent *event){
     if ((event->buttons() & Qt::LeftButton) && scribbling){
-        drawLineTo(event->pos());
-       // cout<<"move event"<<endl;
+        if(true == is_eraser_active){
+            for (int i = event->pos().x()-eraser_size; i < event->pos().x()+eraser_size ; i++) {
+                for (int j = event->pos().y()-eraser_size; j < event->pos().y()+eraser_size ; j++) {
+                    image.setPixelColor(i,j,image_original.pixelColor(i,j));
+                }
+            }
+            openImage();
+            
+        }else{
+            drawLineTo(event->pos());
+        }
     }
 }
 
 void ScribbleArea::mouseReleaseEvent(QMouseEvent *event){
     if (event->button() == Qt::LeftButton && scribbling) {
-        //cout<<"release event"<<endl;
+       
         scribbling = false;
     }
 }
@@ -151,26 +166,31 @@ void ScribbleArea::drawLineTo(const QPoint &endPoint){
     QPainter painter(&image);
     painter.setPen(QPen(myPenColor, myPenWidth, Qt::SolidLine, Qt::RoundCap,
                         Qt::RoundJoin));
+    
+    //For go back method
+    
+    if(changed_pixelQ.size()>=MAX_BACK_MOVE_NB){    
+        changed_pixelQ.pop_front();
+    }
+    changed_pixel temp_px;
+    temp_px.pix_last_point = lastPoint;
+    temp_px.pix_end_point = endPoint;
+    temp_px.old_color = image.pixelColor(endPoint.x(),endPoint.y());
+    temp_px.new_color = this->penColor();
+    temp_px.pen_width = this->myPenWidth;
+    
+    while(changed_pixelQ.size()-changed_pixelsQ_index>=2){
+        changed_pixelQ.pop_back();
+    }
+    
+    changed_pixelQ.push_back(temp_px);
+    changed_pixelsQ_index = changed_pixelQ.size()-1;
+    
     painter.drawLine(lastPoint, endPoint);
     modified = true;
 
     int rad = (myPenWidth / 2) + 2;
     update(QRect(lastPoint, endPoint).normalized().adjusted(-rad, -rad, +rad, +rad));
-  
-    //changed_pixels.push_back(lastPoint);
-    if(changed_pixelQ.size()>=MAX_BACK_MOVE_NB){    
-        changed_pixelQ.pop_front();
-    }
-    changed_pixel temp_px;
-    temp_px.pix_pos = endPoint;
-    temp_px.old_color = image.pixelColor(endPoint.x(),endPoint.y());
-    temp_px.new_color = this->penColor();
-    while(changed_pixelQ.size()-changed_pixelsQ_index>=2){
-        changed_pixelQ.pop_front();
-    }
-    cout<<"pos x : "<<endPoint.x()<<" pos y : "<<endPoint.y()<<endl;
-    changed_pixelQ.push_back(temp_px);
-    changed_pixelsQ_index = changed_pixelQ.size()-1;
     lastPoint = endPoint;
 }
 void ScribbleArea::resizeImage(QImage *image, const QSize &newSize){
@@ -204,24 +224,42 @@ void ScribbleArea::print(){
 }
 
 void ScribbleArea::go_back(){
-    changed_pixel temp_pix = changed_pixelQ.at(changed_pixelsQ_index);
-    image.setPixelColor(temp_pix.pix_pos,temp_pix.old_color);
-    changed_pixelsQ_index--;
+    if(changed_pixelsQ_index>=0){    
+        changed_pixel temp_pix = changed_pixelQ.at(changed_pixelsQ_index);
     
-    painter.drawLine(temp_pix.pix_pos, temp_pix.pix_pos);
-    //update(QRect(temp_pix.pix_pos, temp_pix.pix_pos).normalized().adjusted(-rad, -rad, +rad, +rad));
-    update();
+        QPainter painter(&image);
+        painter.setPen(QPen(temp_pix.old_color, temp_pix.pen_width, Qt::SolidLine, Qt::RoundCap,Qt::RoundJoin));
+        
+        painter.drawLine(temp_pix.pix_end_point,temp_pix.pix_last_point);
+       
+        int rad = (myPenWidth / 2) + 2;
+        update(QRect(temp_pix.pix_end_point, temp_pix.pix_last_point).normalized().adjusted(-rad, -rad, +rad, +rad));
+        if(0<changed_pixelsQ_index){
+            changed_pixelsQ_index--;
+        }
+    }
+  
+    
+    
 }
 
 void ScribbleArea::go_forward(){
-    if(changed_pixelsQ_index < changed_pixelQ.size()-1){
+    if(changed_pixelsQ_index<changed_pixelQ.size()){
+        
         changed_pixel temp_pix = changed_pixelQ.at(changed_pixelsQ_index);
-        this->image.setPixelColor(temp_pix.pix_pos,temp_pix.new_color);
         
-        painter.drawLine(temp_pix.pix_pos, temp_pix.pix_pos);
-        changed_pixelsQ_index++;
-       // update(QRect(temp_pix.pix_pos, temp_pix.pix_pos).normalized().adjusted(-rad, -rad, +rad, +rad));
+        QPainter painter(&image);
+        painter.setPen(QPen(temp_pix.new_color, temp_pix.pen_width, Qt::SolidLine, Qt::RoundCap,Qt::RoundJoin));
         
-    }
+        painter.drawLine(temp_pix.pix_last_point,temp_pix.pix_end_point);
+       
+        int rad = (myPenWidth / 2) + 2;
+        update(QRect(temp_pix.pix_end_point, temp_pix.pix_last_point).normalized().adjusted(-rad, -rad, +rad, +rad));
+        if(changed_pixelsQ_index<changed_pixelQ.size()-1){
+            changed_pixelsQ_index++;
+        }
+        
+    } 
+
     
 }

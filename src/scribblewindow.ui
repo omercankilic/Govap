@@ -51,14 +51,13 @@
     </property>
     <addaction name="actionPen_Color"/>
     <addaction name="actionPen_Width"/>
+    <addaction name="actionEraser_Size"/>
    </widget>
    <widget class="QMenu" name="menuActions">
     <property name="title">
      <string>Actions</string>
     </property>
     <addaction name="actionClean_Screen"/>
-    <addaction name="actionGo_Back"/>
-    <addaction name="actionGo_Forward"/>
    </widget>
    <widget class="QMenu" name="menuAbout">
     <property name="title">
@@ -88,10 +87,11 @@
     <enum>TopToolBarArea</enum>
    </attribute>
    <attribute name="toolBarBreak">
-    <bool>true</bool>
+    <bool>false</bool>
    </attribute>
    <addaction name="actionback"/>
    <addaction name="actionforward"/>
+   <addaction name="actionEraser"/>
   </widget>
   <action name="actionExit">
    <property name="text">
@@ -172,6 +172,9 @@
    <property name="text">
     <string>back</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+Z</string>
+   </property>
   </action>
   <action name="actionforward">
    <property name="icon">
@@ -182,15 +185,29 @@
    <property name="text">
     <string>forward</string>
    </property>
-  </action>
-  <action name="actionGo_Back">
-   <property name="text">
-    <string>Go Back</string>
+   <property name="shortcut">
+    <string>Ctrl+Y</string>
    </property>
   </action>
-  <action name="actionGo_Forward">
+  <action name="actionEraser">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset>
+     <normalon>:/resources/icons/eraser.png</normalon>
+    </iconset>
+   </property>
    <property name="text">
-    <string>Go Forward</string>
+    <string>Eraser</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+E</string>
+   </property>
+  </action>
+  <action name="actionEraser_Size">
+   <property name="text">
+    <string>Eraser Size</string>
    </property>
   </action>
  </widget>

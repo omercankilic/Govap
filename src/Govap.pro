@@ -51,10 +51,9 @@ DISTFILES += \
       fileIcon.png \
       icons/Arrow-left.png \
       icons/Arrow-right.png \
+      icons/eraser.png \
       icons/go_back.png \
-      icons/go_forward.png \
-      joker.jpg
-
+      icons/go_forward.png 
 
 
 INCLUDEPATH  += /usr/include/opencv4
