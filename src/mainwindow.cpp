@@ -20,6 +20,8 @@ void MainWindow::initialize_parameters(){
     this->ui->mainVideo->setScene(scne);
     videoCont = new VideoControl();
     painterCont = new FrameProcessor();
+    this->videoCont->playing_speed_coeff = 1;   
+    set_speed_checks(1);
 }
 
 void MainWindow::initialize_signal_connections(){  
@@ -113,6 +115,8 @@ void MainWindow::on_previousFrame_clicked(){
 }
 
 void MainWindow::on_stopVideo_clicked(){
+    this->videoCont->playing_speed_coeff = 1;   
+    set_speed_checks(1);
     emit on_stopVideoSig();
 }
 

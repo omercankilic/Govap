@@ -225,17 +225,20 @@ void ScribbleArea::print(){
 
 void ScribbleArea::go_back(){
     if(changed_pixelsQ_index>=0){    
-        changed_pixel temp_pix = changed_pixelQ.at(changed_pixelsQ_index);
-    
-        QPainter painter(&image);
-        painter.setPen(QPen(temp_pix.old_color, temp_pix.pen_width, Qt::SolidLine, Qt::RoundCap,Qt::RoundJoin));
+        if(false ==changed_pixelQ.empty()){
+            
+            changed_pixel temp_pix = changed_pixelQ.at(changed_pixelsQ_index);
         
-        painter.drawLine(temp_pix.pix_end_point,temp_pix.pix_last_point);
-       
-        int rad = (myPenWidth / 2) + 2;
-        update(QRect(temp_pix.pix_end_point, temp_pix.pix_last_point).normalized().adjusted(-rad, -rad, +rad, +rad));
-        if(0<changed_pixelsQ_index){
-            changed_pixelsQ_index--;
+            QPainter painter(&image);
+            painter.setPen(QPen(temp_pix.old_color, temp_pix.pen_width, Qt::SolidLine, Qt::RoundCap,Qt::RoundJoin));
+            
+            painter.drawLine(temp_pix.pix_end_point,temp_pix.pix_last_point);
+           
+            int rad = (myPenWidth / 2) + 2;
+            update(QRect(temp_pix.pix_end_point, temp_pix.pix_last_point).normalized().adjusted(-rad, -rad, +rad, +rad));
+            if(0<changed_pixelsQ_index){
+                changed_pixelsQ_index--;
+            }
         }
     }
   
@@ -246,17 +249,20 @@ void ScribbleArea::go_back(){
 void ScribbleArea::go_forward(){
     if(changed_pixelsQ_index<changed_pixelQ.size()){
         
-        changed_pixel temp_pix = changed_pixelQ.at(changed_pixelsQ_index);
-        
-        QPainter painter(&image);
-        painter.setPen(QPen(temp_pix.new_color, temp_pix.pen_width, Qt::SolidLine, Qt::RoundCap,Qt::RoundJoin));
-        
-        painter.drawLine(temp_pix.pix_last_point,temp_pix.pix_end_point);
-       
-        int rad = (myPenWidth / 2) + 2;
-        update(QRect(temp_pix.pix_end_point, temp_pix.pix_last_point).normalized().adjusted(-rad, -rad, +rad, +rad));
-        if(changed_pixelsQ_index<changed_pixelQ.size()-1){
-            changed_pixelsQ_index++;
+        if(false == changed_pixelQ.empty()){
+            
+            changed_pixel temp_pix = changed_pixelQ.at(changed_pixelsQ_index);
+            
+            QPainter painter(&image);
+            painter.setPen(QPen(temp_pix.new_color, temp_pix.pen_width, Qt::SolidLine, Qt::RoundCap,Qt::RoundJoin));
+            
+            painter.drawLine(temp_pix.pix_last_point,temp_pix.pix_end_point);
+           
+            int rad = (myPenWidth / 2) + 2;
+            update(QRect(temp_pix.pix_end_point, temp_pix.pix_last_point).normalized().adjusted(-rad, -rad, +rad, +rad));
+            if(changed_pixelsQ_index<changed_pixelQ.size()-1){
+                changed_pixelsQ_index++;
+            }
         }
         
     } 

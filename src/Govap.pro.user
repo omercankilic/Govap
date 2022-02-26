@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 4.11.0, 2022-01-23T04:39:44. -->
+<!-- Written by QtCreator 4.11.0, 2022-02-26T20:58:24. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -282,8 +282,9 @@
     </valuelist>
     <value type="int" key="PE.EnvironmentAspect.Base">2</value>
     <valuelist type="QVariantList" key="PE.EnvironmentAspect.Changes"/>
-    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">Qt4ProjectManager.Qt4RunConfiguration:/home/mrcan/Desktop/govap/src/Govap.pro</value>
-    <value type="QString" key="ProjectExplorer.RunConfiguration.BuildKey">/home/mrcan/Desktop/govap/src/Govap.pro</value>
+    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">Govap2</value>
+    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">Qt4ProjectManager.Qt4RunConfiguration:/home/mrcan/Desktop/Donem-1/492/govap/src/Govap.pro</value>
+    <value type="QString" key="ProjectExplorer.RunConfiguration.BuildKey">/home/mrcan/Desktop/Donem-1/492/govap/src/Govap.pro</value>
     <value type="QString" key="RunConfiguration.Arguments"></value>
     <value type="bool" key="RunConfiguration.Arguments.multi">false</value>
     <value type="QString" key="RunConfiguration.OverrideDebuggerStartup"></value>
